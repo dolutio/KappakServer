@@ -1,0 +1,7 @@
+{
+	"CHAT_MAIN": {"last_received_msg": "usnm_1", 
+		"u_1": {"text": "HELLO", "sending_time": "12:2025:1:5:2"},
+		"usnm_1": {"text": "Hi!", "sending_time": "12:2025:1:5:3"}
+		}
+
+}

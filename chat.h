@@ -1,6 +1,7 @@
 #ifndef CHAT_H
 	#define CHAT_H
 
+	#include <stdint.h>
 	#include "linked_list.h"
 	#include "tools.h"
 	#include "client.h"

@@ -127,7 +127,7 @@ char* get_msg_chat_name(char* json_s)
 
 //	parse_object(root);
 
-	cJSON_Delete(root);
+	// cJSON_Delete(root);
 
 	return chat_name;
 }

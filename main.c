@@ -10,10 +10,11 @@
 #include "tools.h"
 #include "server_tools.h"
 
-#define HOST ""
 #define PORT 8080
+#define BUFFER_SIZE 1024
 
 void handle_sigint(int sig);
+void handle_client(int cl_fd);
 
 int main()
 {
@@ -53,9 +54,9 @@ int main()
 		exit(1);
 	}
 
-	if (listen(server_fd, 1) < 0)
+	if (listen(server_fd, 5) < 0)
 	{
-		perror("Listen");
+		perror("Listen Error");
 		close(server_fd);
 		exit(1);
 	}
@@ -73,22 +74,18 @@ int main()
 
 		inet_ntoa(client_addr.sin_addr);
 
-		while ((bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0)) > 0)
+		pid_t pid = fork();
+
+		if (pid == 0)
 		{
-			printf("73");
-			buffer[bytes_received] = '\0';
-			printf("\nClient: %s\n", buffer);
+			close(server_fd);
 
-		//	dict_add_keyvalue_pair(accounts, "name", buffer, (size_t)bytes_received, (size_t)bytes_received);
-		//	printf("Client\'s username is %s and password is %s", (char*)dict_get_value_by_key(accounts, "name"), buffer);
-		//	printf("Is contains? %d\n ", list_contains(usernames, buffer, bytes_received));
-			if (strlen(buffer) != 0)
-				handle_req(client_fd, buffer);
-
+			handle_client(client_fd);
 		}
 
 		close(client_fd);
 	}
+
 	close(server_fd);
 	save_chats_data();
 	save_clients_data();
@@ -99,7 +96,29 @@ int main()
 void handle_sigint(int sig)
 {
 	printf("Closing");
+	save_clients_data();
 	save_chats_data();
 
 	exit(0);
+}
+
+void handle_client(int cl_fd)
+{
+	char buffer[BUFFER_SIZE];
+
+	ssize_t bytes_received;
+
+	while((bytes_received = recv(cl_fd, buffer, BUFFER_SIZE - 1, 0)) > 0)
+	{
+		buffer[bytes_received] = '\0';
+
+		if (strlen(buffer) > 0)
+		{
+			handle_req(cl_fd, buffer);
+		}
+	}
+
+	send_resp(cl_fd, CLOSE_CODE);
+
+	close(cl_fd);
 }

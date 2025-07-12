@@ -2,7 +2,7 @@
 
 void load_clients_data()
 {
-	char* json_s = read_file("clients.json");
+	char* json_s = read_file("clients.json");printf("\nLoad 5\n");
 
 	if (!json_s)
 	{
@@ -11,35 +11,25 @@ void load_clients_data()
 		return;
 	}
 
-	cJSON* root = cJSON_Parse(json_s);
+	cJSON* root = cJSON_Parse(json_s); printf("\nLoad 14\n");
 	cJSON* item = NULL;
-	free(json_s);
 
 	cJSON_ArrayForEach(item, root)
 	{
-		if (cJSON_IsObject(item))
-		{
+		if (cJSON_IsString(item))
+		{printf("\nLoad 20\n");
 			Client* client = (Client*)malloc(sizeof(Client));
 			client->username = item->string;
-			
-			cJSON* pwd_hash_json = cJSON_GetObjectItem(item, "pwd_hash");
+			client->pwd_hash = item->valuestring;
 
-			if (pwd_hash_json && cJSON_IsString(pwd_hash_json))
-			{
-				client->pwd_hash = pwd_hash_json->valuestring;
-			}
-
-			else
-				printf("Error: clients password hash is not string");
-
-			list_append(clients, client);
+			list_append(clients, client);printf("\nCl\n");
 		}
 	}
 }
 
 void add_client_in_base(char* json_s)
 {
-	cJSON* root = cJSON_Parse(json_s);
+	cJSON* root = cJSON_Parse(json_s);printf("\nlaod41\n");
 
 	if (!root)
 	{
@@ -48,7 +38,7 @@ void add_client_in_base(char* json_s)
 		exit(1);
 	}
 
-	cJSON* user_json = root->child;
+	cJSON* user_json = root->child;printf("\nload50\n");
 
 	if (!user_json || !cJSON_IsString(user_json))
 	{
@@ -69,6 +59,7 @@ void add_client_in_base(char* json_s)
 	list_append(clients, client);
 
 	cJSON_Delete(root);
+	free(json_s);
 }
 
 void save_clients_data()

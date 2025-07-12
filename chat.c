@@ -49,10 +49,12 @@ void load_chats_data()
 					cJSON* message_json = cJSON_GetArrayItem(messages_json, i);
 
 					list_append(messages, message_json->valuestring);
+
+					if (i == messages_count - 1) last_msg_id = message_json->valuestring; // if not declared
 				}
 			}
 
-			if (last_msg_id_json && cJSON_IsString(last_msg_id_json))
+			if (last_msg_id_json && cJSON_IsString(last_msg_id_json) && strlen(last_msg_id_json->valuestring) > 0)
 				last_msg_id = last_msg_id_json->valuestring;
 
 			chat->chat_name = item->string;
@@ -60,7 +62,9 @@ void load_chats_data()
 			chat->members = members;
 			chat->messages = messages;
 
-			printf("\nAdd chat %s from json\n", chat->chat_name);list_append(chats, chat);
+			printf("\nAdd chat %s from json %s\n", chat->chat_name, chat->last_msg_id);
+			
+			list_append(chats, chat);
 		}
 	}
 }
@@ -95,6 +99,7 @@ void add_chat_in_base(char* json_s)
 	}
 
 	List* messages = create_list();
+	char* last_msg_id = "";
 	
 	cJSON* messages_json_array = cJSON_GetObjectItem(root, "messages");
 
@@ -109,7 +114,10 @@ void add_chat_in_base(char* json_s)
 
 	for (int i = 0; i < messages_json_array_len; i++)
 	{
-		list_append(messages, cJSON_GetArrayItem(messages_json_array, i)->valuestring);
+		char* message = cJSON_GetArrayItem(messages_json_array, i)->valuestring;
+		list_append(messages, message);
+
+		if (i == messages_json_array_len - 1) last_msg_id = message;;
 	}
 
 	cJSON_Delete(root);
@@ -117,7 +125,7 @@ void add_chat_in_base(char* json_s)
 	Chat* chat = (Chat*)malloc(sizeof(Chat));
 	chat->members = members;
 	chat->messages = messages;
-	chat->last_msg_id = "";
+	chat->last_msg_id = last_msg_id;
 
 	list_append(chats, chat);
 }

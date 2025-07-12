@@ -28,30 +28,29 @@ void handle_req(int cl_fd, const char* request)
 
 	else if (memcmp(cmd, "message", 7) == 0)
 	{
-		char* message_json = (char*)malloc(strlen(request) - 1); // -2 for first 2 chars and +1 for '\0'
-		memcpy(message_json, &request[7], strlen(request) - 2); // 2?8?
-		printf("\nMessage: %s\n", message_json);
+		char* message_json_s = (char*)malloc(strlen(request) - 1); // -2 for first 2 chars and +1 for '\0'
+		memcpy(message_json_s, &request[7], strlen(request) - 2); // 2?8?
+		printf("\nMessage: %s\n", message_json_s);
 
 		Node* chat_node = chats->head;
 
 		while (chat_node)
 		{
 			Chat* chat = chat_node->data;
+			char* chat_name = get_msg_chat_name(message_json_s);
 
-			if (strcmp(chat->chat_name, get_msg_chat_name(message_json)) == 0)
+			if (strcmp(chat->chat_name, chat_name) == 0)
 			{
-				list_append(chat->messages, message_json);
+				printf("\nMessage append\n");
+				list_append(chat->messages, message_json_s);
 				break;
 			}
 
 			chat_node = chat_node->next;
 		}
-		printf("\nSending %s\n", message_json);
-		uint8_t type = 0x01;
-		uint8_t len = strlen(message_json);
-		send(cl_fd, &type, 1, 0);
-		send(cl_fd, &len, 1, 0);
-		send(cl_fd, message_json, len, 0);printf("\nSent\n");
+		printf("\nSending %s\n", message_json_s);
+
+		send_message(cl_fd, message_json_s);
 	}
 
 	else if (memcmp(cmd, "addc", 4) == 0) // add chat
@@ -116,7 +115,7 @@ void signup(int cl_fd, char* username, char* pwd_hash)
 
 	list_append(clients, client);
 
-	send_resp(cl_fd, ACCEPT);
+	send_resp(cl_fd, ACCEPT);printf("\nACcetpted\n");
 
 }
 
@@ -149,6 +148,27 @@ void login(int cl_fd, char* username, char* pwd_hash)
 			client->cl_fd = cl_fd;
 
 			return;
+		}
+
+		client_node = client_node->next;
+	}
+}
+
+void send_message(int cl_fd, char* message_json_s)
+{
+	Node* client_node = clients->head;
+
+	while (client_node)
+	{
+		Client* client = (Client*)client_node->data;
+		
+		if (client->cl_fd != cl_fd)
+		{
+			uint8_t type = 0x01;
+			uint8_t len = strlen(message_json_s);
+			send(client->cl_fd, &type, 1, 0);
+			send(client->cl_fd, &len, 1, 0);
+			send(client->cl_fd, message_json_s, len, 0);
 		}
 
 		client_node = client_node->next;

@@ -1,7 +1,7 @@
 {
-	"CHAT":	{
+	"MAIN_CHAT":	{
 		"members":	[],
-		"messages":	[],
-		"last_msg_id":	""
+		"messages":	[" {\"MAIN_CHAT\": {\"martun_94\": {\"text\": \"9cacaab9\", \"sending_time\": \"11:07:2025:19:08\"}}}", " {\"MAIN_CHAT\": {\"martun_True\": {\"text\": \"b86f\", \"sending_time\": \"12:07:2025:06:58\"}}}"],
+		"last_msg_id":	" {\"MAIN_CHAT\": {\"martun_94\": {\"text\": \"9cacaab9\", \"sending_time\": \"11:07:2025:19:08\"}}}"
 	}
 }

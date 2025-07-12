@@ -16,6 +16,9 @@
 	#define INCORRECT_PASSWORD 3
 	#define CHAT_ALREADY_EXISTS 4
 
+	#define EMPTY_CODE 0 // for send something, client closed after 5 seconds without message
+	#define CLOSE_CODE 10
+
 	typedef struct Message
 	{
 		char* chat_name;
@@ -28,6 +31,7 @@
 	void send_resp(int cl_fd, int reply);
 	void signup(int cl_fd, char* username, char* pwd_hash);
 	void login(int cl_fd, char* username, char* pwd_hash);
+	void send_message(int cl_fd, char* json_message_c);
 	void add_chat(int cl_fd, const char* chat_name);
 	void add_user_in_chat(char* chat_name, char* username);
 

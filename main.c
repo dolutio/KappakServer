@@ -27,6 +27,7 @@ int main()
 	load_chats_data();
 	load_clients_data();
 	print_chats();
+	print_clients();
 	printf("\nAksljfio\n");
 
 	int server_fd, client_fd;printf("\n24\n");
@@ -35,7 +36,7 @@ int main()
 	socklen_t client_len = sizeof(client_addr);
 	ssize_t bytes_received;printf("\n28\n");
 
-	server_fd = socket(AF_INET, SOCK_STREAM, 0);printf("30");
+	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (server_fd < 0)
 	{
@@ -96,7 +97,7 @@ int main()
 void handle_sigint(int sig)
 {
 	printf("Closing");
-	save_clients_data();
+	// save_clients_data();
 	save_chats_data();
 
 	exit(0);

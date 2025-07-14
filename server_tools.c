@@ -6,9 +6,9 @@ List* chats;
 
 void handle_req(int cl_fd, const char* request)
 {
-	List* splited_req_list = split(request, " ");printf("30");
+	List* splited_req_list = split(request, " ");
 
-	char* cmd = (char*)splited_req_list->head->data;printf("%s", cmd);
+	char* cmd = (char*)splited_req_list->head->data;printf("%s\n", cmd);
 
 	if (memcmp(cmd, "signup", 6) == 0) // signup
 	{
@@ -85,8 +85,14 @@ void handle_req(int cl_fd, const char* request)
 
 void send_resp(int cl_fd, int response)
 {
+	uint8_t _resptonse_type = 0x02;
+	size_t _response_len = 4; // for uint32_t codes
+	uint32_t _response_len_net = htonl((uint32_t)_response_len);
 	uint32_t _response = htonl(response);
-	send(cl_fd, &_response, sizeof(_response), 0);
+
+	send(cl_fd, &_resptonse_type, 1, 0);
+	send(cl_fd, &_response_len_net, 4, 0);
+	send(cl_fd, &_response, _response_len, 0);
 }
 
 
@@ -121,17 +127,18 @@ void signup(int cl_fd, char* username, char* pwd_hash)
 
 void login(int cl_fd, char* username, char* pwd_hash)
 {
-	char* store_pwd_hash = (char*)dict_get_value_by_key(accounts, username);
+	char* store_pwd_hash = get_pwd_hash_by_username(username);
 
 	if (!store_pwd_hash)
 	{
-		send_resp(cl_fd, ACCOUNT_NOT_FOUND);
+		send_resp(cl_fd, ACCOUNT_NOT_FOUND);printf("\nAccNotFound %s\n", username);print_clients();
 		return;
 	}
-
+	printf("\nPwd_hash %s\n", pwd_hash);
+	printf("\n%d\n", strcmp(pwd_hash, store_pwd_hash));
 	if (strcmp(pwd_hash, store_pwd_hash) != 0)
 	{
-		send_resp(cl_fd, INCORRECT_PASSWORD);
+		send_resp(cl_fd, INCORRECT_PASSWORD);printf("IncorrectPasw\n%s\n%s\n\n\n\n\n\n\n", pwd_hash, store_pwd_hash);
 		return;
 	}
 
@@ -145,30 +152,34 @@ void login(int cl_fd, char* username, char* pwd_hash)
 
 		if (strcmp(client->username, username) == 0)
 		{
-			client->cl_fd = cl_fd;
+			client->cl_fd = cl_fd;printf("\nLoged In! %d\n", cl_fd);
 
 			return;
-		}
+		};printf("\nCurr UsName: %s\n", client->username);
 
 		client_node = client_node->next;
-	}
+	};printf("\nUsername Not Found: %s\n\n\n\n", username);
 }
 
 void send_message(int cl_fd, char* message_json_s)
 {
-	Node* client_node = clients->head;
+	Node* client_node = clients->head;printf("\nsend159\n");
 
 	while (client_node)
 	{
 		Client* client = (Client*)client_node->data;
+		printf("\nsend_164\n");
 		
 		if (client->cl_fd != cl_fd)
 		{
+			printf("send_167");
 			uint8_t type = 0x01;
-			uint8_t len = strlen(message_json_s);
-			send(client->cl_fd, &type, 1, 0);
-			send(client->cl_fd, &len, 1, 0);
-			send(client->cl_fd, message_json_s, len, 0);
+			size_t len = strlen(message_json_s);
+			uint32_t len_net = htonl((uint32_t)len);
+
+			send(cl_fd, &type, 1, 0);
+			send(cl_fd, &len_net, 4, 0);
+			send(cl_fd, message_json_s, len, 0);printf("\n%d %d sended\n", client->cl_fd, cl_fd);
 		}
 
 		client_node = client_node->next;

@@ -22,7 +22,7 @@ void load_clients_data()
 			client->username = item->string;
 			client->pwd_hash = item->valuestring;
 
-			list_append(clients, client);printf("\nCl\n");
+			list_append(clients, client);
 		}
 	}
 }
@@ -60,6 +60,18 @@ void add_client_in_base(char* json_s)
 
 	cJSON_Delete(root);
 	free(json_s);
+}
+
+void print_clients()
+{
+	Node* client_node = clients->head;
+
+	while (client_node)
+	{
+		Client* client = (Client*)client_node->data;
+		printf("\nClient: %s\n", client->username);
+		client_node = client_node->next;
+	}
 }
 
 void save_clients_data()

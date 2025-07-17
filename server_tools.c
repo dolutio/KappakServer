@@ -30,7 +30,7 @@ void handle_req(int cl_fd, const char* request)
 	{
 		char* message_json_s = (char*)malloc(strlen(request) - 1); // -2 for first 2 chars and +1 for '\0'
 		memcpy(message_json_s, &request[7], strlen(request) - 2); // 2?8?
-		printf("\nMessage: %s\n", message_json_s);
+		printf("\nMessage: %s FD: %d\n", message_json_s, cl_fd);
 
 		Node* chat_node = chats->head;
 
@@ -51,6 +51,14 @@ void handle_req(int cl_fd, const char* request)
 		printf("\nSending %s\n", message_json_s);
 
 		send_message(cl_fd, message_json_s);
+		// uint8_t type = 0x01;
+		// 	size_t len = strlen(message_json_s);
+		// 	uint32_t len_net = htonl((uint32_t)len);
+
+		// 	send(cl_fd, &type, 1, 0);
+		// 	send(cl_fd, &len_net, 4, 0);
+		// 	send(cl_fd, message_json_s, len, 0);
+
 	}
 
 	else if (memcmp(cmd, "addc", 4) == 0) // add chat
@@ -177,9 +185,9 @@ void send_message(int cl_fd, char* message_json_s)
 			size_t len = strlen(message_json_s);
 			uint32_t len_net = htonl((uint32_t)len);
 
-			send(cl_fd, &type, 1, 0);
-			send(cl_fd, &len_net, 4, 0);
-			send(cl_fd, message_json_s, len, 0);printf("\n%d %d sended\n", client->cl_fd, cl_fd);
+			send(client->cl_fd, &type, 1, 0);
+			send(client->cl_fd, &len_net, 4, 0);
+			send(client->cl_fd, message_json_s, len, 0);printf("\n%d %d sended\n", client->cl_fd, cl_fd);
 		}
 
 		client_node = client_node->next;

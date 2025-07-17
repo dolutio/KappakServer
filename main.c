@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
@@ -14,7 +15,7 @@
 #define BUFFER_SIZE 1024
 
 void handle_sigint(int sig);
-void handle_client(int cl_fd);
+void* handle_client(void* arg); // arg in pthread is void*
 
 int main()
 {
@@ -30,11 +31,8 @@ int main()
 	print_clients();
 	printf("\nAksljfio\n");
 
-	int server_fd, client_fd;printf("\n24\n");
-	struct sockaddr_in server_addr, client_addr;
-	char buffer[1024];
-	socklen_t client_len = sizeof(client_addr);
-	ssize_t bytes_received;printf("\n28\n");
+	int server_fd;printf("\n24\n");
+	struct sockaddr_in server_addr;
 
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -64,9 +62,12 @@ int main()
 
 	while (true)
 	{
-		client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
+		struct sockaddr_in client_addr;
+		socklen_t client_len = sizeof(client_addr);
+		int* ptr_client_fd = (int*)malloc(sizeof(int));
+		*ptr_client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
 
-		if (client_fd < 0)
+		if (*ptr_client_fd < 0)
 		{
 			perror("accept");
 			close(server_fd);
@@ -75,16 +76,9 @@ int main()
 
 		inet_ntoa(client_addr.sin_addr);
 
-		pid_t pid = fork();
-
-		if (pid == 0)
-		{
-			close(server_fd);
-
-			handle_client(client_fd);
-		}
-
-		close(client_fd);
+		pthread_t tid;
+		pthread_create(&tid, NULL, handle_client, ptr_client_fd);
+		pthread_detach(tid);
 	}
 
 	close(server_fd);
@@ -103,8 +97,11 @@ void handle_sigint(int sig)
 	exit(0);
 }
 
-void handle_client(int cl_fd)
+void* handle_client(void* arg)
 {
+	int cl_fd = *(int*)arg;
+	free(arg);
+
 	char buffer[BUFFER_SIZE];
 
 	ssize_t bytes_received;
@@ -119,7 +116,10 @@ void handle_client(int cl_fd)
 		}
 	}
 
-	send_resp(cl_fd, CLOSE_CODE);
+
+	printf("Client disconnected");
 
 	close(cl_fd);
+
+	return NULL;
 }
